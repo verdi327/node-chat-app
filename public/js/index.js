@@ -15,13 +15,14 @@ socket.on("newMessage", (message) => {
 	jQuery("#messages").append(li)
 })
 
+let messageTextBox = jQuery("[name=message]");
 jQuery("#message-form").on("submit", function(e) {
 	e.preventDefault()
 	socket.emit("createMessage", {
 		from: "User",
-		text: jQuery("[name=message]").val()
+		text: messageTextBox.val()
 	}, function(res){
-		console.log(res)
+		messageTextBox.val("")
 	})
 })
 
@@ -30,13 +31,18 @@ locationBtn.on("click", function(e) {
 	if (!navigator.geolocation){
 		return alert("Geolocation is not supported by your browser.")
 	}
+
+	locationBtn.attr("disabled", "disabled").text("Sending location...");
+
 	navigator.geolocation.getCurrentPosition(function(position){
+		locationBtn.removeAttr("disabled").text("Send location");
 		socket.emit("createLocationMessage", {
 			lat: position.coords.latitude,
 			lng: position.coords.longitude
 		})
 	}, function(e){
-		alert("Unable to fetch location.")
+		locationBtn.removeAttr("disabled").text("Send location");
+		alert("Unable to fetch location.");
 	})
 })
 
@@ -46,7 +52,7 @@ socket.on("newLocationMessage", (message) => {
 	li.text(`${message.from}: `)
 	a.attr("href", message.url)
 	li.append(a)
-	
+
 	jQuery("#messages").append(li)
 })
 
