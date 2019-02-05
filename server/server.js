@@ -21,9 +21,10 @@ io.on("connection", (socket) => {
 		console.log("client connection lost")
 	})
 
-	socket.on("createMessage", (message) => {
+	socket.on("createMessage", (message, callback) => {
 		console.log("new message received: ", message)
 		io.emit("newMessage", generateMessage(message.from, message.text))
+		callback("200 from server")
 	})
 
 })
