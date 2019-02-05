@@ -16,6 +16,15 @@ io.on("connection", (socket) => {
 	socket.on("disconnect", () => {
 		console.log("client connection lost")
 	})
+
+	socket.on("createMessage", (message) => {
+		console.log("new message received: ", message)
+
+		message.createdAt = new Date().toString()
+
+		socket.emit("newMessage", message)
+	})
+
 })
 
 server.listen(port, () => {
