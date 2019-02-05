@@ -20,9 +20,9 @@ io.on("connection", (socket) => {
 	socket.on("createMessage", (message) => {
 		console.log("new message received: ", message)
 
-		message.createdAt = new Date().toString()
+		message.createdAt = new Date().getTime()
 
-		socket.emit("newMessage", message)
+		io.emit("newMessage", message)
 	})
 
 })
