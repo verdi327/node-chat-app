@@ -44,14 +44,14 @@ describe("Users", () => {
 	})
 
 	describe("getUser", () => {
-		it("should find a user by id and return in an array", () => {
+		it("should find a user by id and return user object", () => {
 			let user = users.getUser("1")
-			expect(user).toEqual([{id: "1", name: "Kumar", room: "Room A"}])
+			expect(user).toEqual({id: "1", name: "Kumar", room: "Room A"})
 		})
 
-		it("should return empty array if no results found", () => {
+		it("should return undefined if no user found", () => {
 			let user = users.getUser("100")
-			expect(user).toEqual([])
+			expect(user).toNotExist();
 		})
 	})
 

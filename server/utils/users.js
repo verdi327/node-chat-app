@@ -23,7 +23,7 @@ class Users {
 	}
 
 	getUser(id){
-		return this.list.filter(user => user.id === id)
+		return this.list.filter(user => user.id === id)[0]
 	}
 
 	getUserList(room){
