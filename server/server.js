@@ -8,17 +8,21 @@ const socketIO = require("socket.io");
 const server = http.createServer(app);
 const io = socketIO(server);
 const {generateMessage, generateLocationMessage} = require("./utils/message");
+const {isRealString} = require("./utils/validation");
+const {Users} = require("./utils/users");
+const users = new Users();
 
 app.use(express.static(publicPath))
 
 io.on("connection", (socket) => {
 	console.log("new user connected")
 
-	socket.emit("newMessage", generateMessage("Admin", "Welcome to the chat app"))
-	socket.broadcast.emit("newMessage", generateMessage("Admin", "New user joined the chat")) 
-
 	socket.on("disconnect", () => {
-		console.log("client connection lost")
+		let user = users.removeUser(socket.id);
+		if (user) {
+			io.to(user.room).emit("updateUserList", users.getUserList(user.room));
+			io.to(user.room).emit("newMessage", generateMessage("Admin", `${user.name} has left the room`))
+		}
 	})
 
 	socket.on("createMessage", (message, callback) => {
@@ -29,6 +33,23 @@ io.on("connection", (socket) => {
 
 	socket.on("createLocationMessage", (coords) => {
 		io.emit("newLocationMessage", generateLocationMessage("Admin", coords.lat, coords.lng))
+	})
+
+	socket.on("join", (params, callback) => {
+		if (!isRealString(params.name) || !isRealString(params.room)) {
+			return callback("Display name or room name is not valid")
+		}
+		let [name, room] = [params.name, params.room]
+		
+		
+		socket.join(room);
+		users.removeUser(socket.id);
+		users.addUser(socket.id, name, room);
+		io.to(room).emit("updateUserList", users.getUserList(room));
+
+		socket.emit("newMessage", generateMessage("Admin", `Welcome to ${room} chat`))
+		socket.broadcast.to(room).emit("newMessage", generateMessage("Admin", `${name} has joined the chat`)) 
+		callback()
 	})
 
 })
