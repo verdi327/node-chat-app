@@ -69,19 +69,41 @@ giphyBtn.on("click", function(e) {
 	})
 })
 
-socket.on("newGiphyMessage", (message) => {
-	let formattedTime = moment(message.createdAt).format("h:mm a")
-	let template = jQuery("#giphy-message-template").html()
-	let html = Mustache.render(template, {
-		from: message.from,
-		url: message.url,
-		createdAt: formattedTime
+
+
+socket.on("newGiphyMessage", (response) => {
+	let div = jQuery("<div></div>").attr("id", "gif-results")
+	response.data.forEach(gif => {
+		let a = jQuery("<a></a>").attr("class", "gif-result").attr("href", "#")
+		let img = jQuery("<img>").attr("src", gif.previewUrl)
+		div.append(a.html(img))
 	})
-	jQuery("#messages").append(html)
-	giphyBtn.removeAttr("disabled").text("Send giphy");
-	messageTextBox.val("");
-	scrollToBottom();
+	jQuery("#modal-1-content").html(div)
+	MicroModal.show("modal-1");
+
+	jQuery(".gif-result").on("click", function(e){
+		// get previewUrl from clicked gif
+		let previewUrl = jQuery(this).children().first().attr("src");
+		// match it to the original results array
+		let result = response.data.filter(gif => gif.previewUrl === previewUrl)
+		// if found, create a new message and close modal
+		if (result.length) {
+			let formattedTime = moment(response.createdAt).format("h:mm a")
+			let template = jQuery("#giphy-message-template").html()
+			let html = Mustache.render(template, {
+				from: response.from,
+				url: result[0].url,
+				createdAt: formattedTime
+			})
+			MicroModal.close("modal-1");
+			jQuery("#messages").append(html)
+			giphyBtn.removeAttr("disabled").text("Send giphy");
+			messageTextBox.val("");
+			scrollToBottom();	
+		}
+	})
 })
+
 
 let locationBtn = jQuery("#send-location")
 locationBtn.on("click", function(e) {

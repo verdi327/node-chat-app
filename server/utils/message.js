@@ -1,6 +1,5 @@
 const moment = require("moment");
 const axios = require("axios");
-const giphyApiKey = "QIM0kMysbSG87IDT59wwkDUasIyGGqou";
 
 const generateMessage = (from, text) => {
 	return {
@@ -19,13 +18,19 @@ const generateLocationMessage = (from, lat, lng) => {
 }
 
 const generateGiphyMessage = (from, text) => {
-	// https://api.giphy.com/v1/gifs/search?api_key=QIM0kMysbSG87IDT59wwkDUasIyGGqou&q=tired dog&limit=8&offset=0&rating=PG-13&lang=en
-	let giphyUrl = `https://api.giphy.com/v1/gifs/random?api_key=${giphyApiKey}&tag=${text}&rating=PG`
+	let giphyUrl = `https://api.giphy.com/v1/gifs/search?api_key=${process.env.GIPHY_API_KEY}&q=${text}&limit=12&offset=0&rating=PG-13&lang=en`
+	let data = []
 
 	return axios.get(giphyUrl).then(response => {
+		response.data.data.forEach(result => {
+			let gif = {}
+			gif.url = result.images.fixed_width.url
+			gif.previewUrl = result.images.fixed_width_small.url
+			data.push(gif)
+		})
 		return {
 			from,
-			url: response.data.data.images.fixed_width.url,
+			data,
 			createdAt: moment().valueOf()
 		}
 	})

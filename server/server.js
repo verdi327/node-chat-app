@@ -1,3 +1,4 @@
+require("./config/config.js");
 const http = require("http");
 const path = require("path");
 const publicPath = path.join(__dirname, "../public");

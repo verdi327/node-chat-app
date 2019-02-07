@@ -1,5 +1,10 @@
+require("./../../../server/config/config.js");
 const expect = require("expect");
-const {generateMessage, generateLocationMessage} = require("./../../../server/utils/message")
+const {
+	generateMessage, 
+	generateLocationMessage,
+	generateGiphyMessage
+} = require("./../../../server/utils/message")
 
 describe("generateMessage", () => {
 	it("generate correct message object", () => {
@@ -16,5 +21,18 @@ describe("generateLocationMessage", () => {
 		let newMessage = generateLocationMessage(from, lat, lng)
 		expect(newMessage.createdAt).toExist()
 		expect(newMessage.url).toBe(`https://google.com/maps?q=${lat},${lng}`)
+	})
+})
+
+describe("generateGiphyMessage", () => {
+	it("should return an object with 12 results from Giphy Api", (done) => {
+		generateGiphyMessage("dave", "tired cat").then(response => {
+			expect(response.createdAt).toExist()
+			expect(response.from).toBe("dave")
+			expect(response.data.length).toBe(12)
+			expect(response.data[0].url).toExist()
+			expect(response.data[0].previewUrl).toExist()
+			done()
+		}).catch(e => done(e))
 	})
 })

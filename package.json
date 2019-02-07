@@ -17,6 +17,7 @@
     "axios": "^0.18.0",
     "express": "^4.14.0",
     "lodash": "^4.17.11",
+    "micromodal": "^0.3.2",
     "moment": "^2.15.1",
     "socket.io": "^1.4.8"
   },
