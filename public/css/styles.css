@@ -167,6 +167,10 @@ button:disabled {
   margin-bottom: 5px;
 }
 
+.message__body a {
+  text-decoration: none;
+}
+
 .message__title h4 {
   font-weight: 600;
   margin-right: 10px;

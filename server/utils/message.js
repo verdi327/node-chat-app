@@ -5,15 +5,8 @@ const generateMessage = (from, text) => {
 	return {
 		from,
 		text,
-		createdAt: moment().valueOf()
-	}
-}
-
-const generateLocationMessage = (from, lat, lng) => {
-	return {
-		from,
-		url: `https://google.com/maps?q=${lat},${lng}`,
-		createdAt: moment().valueOf()
+		createdAt: moment().valueOf(),
+		type: "text"
 	}
 }
 
@@ -32,17 +25,8 @@ const generateGiphyResults = (text) => {
 	})
 }
 
-const generateGiphyMessage = (from, url) => {
-	return {
-		from,
-		url,
-		createdAt: moment().valueOf()
-	}
-}
 
 module.exports = {
 	generateMessage,
-	generateLocationMessage,
-	generateGiphyResults,
-	generateGiphyMessage
+	generateGiphyResults
 }

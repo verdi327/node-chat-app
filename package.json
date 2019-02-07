@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
-    "test": "mocha tests/**/*.test.js",
+    "test": "export NODE_ENV=test && mocha tests/**/*.test.js",
     "test-watch": "nodemon --exec 'npm test'"
   },
   "engines": {
@@ -19,6 +19,8 @@
     "lodash": "^4.17.11",
     "micromodal": "^0.3.2",
     "moment": "^2.15.1",
+    "mongodb": "^3.1.13",
+    "mongoose": "^5.4.10",
     "socket.io": "^1.4.8"
   },
   "devDependencies": {

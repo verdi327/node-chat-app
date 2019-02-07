@@ -31,13 +31,32 @@ socket.on("disconnect", () => {
 });
 
 socket.on("newMessage", (message) => {
-	let formattedTime = moment(message.createdAt).format("h:mm a")
-	let template = jQuery("#message-template").html()
-	let html = Mustache.render(template, {
-		text: message.text,
-		from: message.from,
-		createdAt: formattedTime
-	})
+	let formattedTime = moment(message.createdAt).format("h:mm a");
+	let template;
+	let html;
+	if (message.type === "text"){
+		template = jQuery("#message-template").html()
+		html = Mustache.render(template, {
+			text: message.text,
+			from: message.from,
+			createdAt: formattedTime
+		})
+	} else if (message.type === "link"){
+		template = jQuery("#location-message-template").html()
+		html = Mustache.render(template, {
+			from: message.from,
+			url: message.url,
+			createdAt: formattedTime
+		})
+	} else if (message.type === "image"){
+		template = jQuery("#giphy-message-template").html()
+		html = Mustache.render(template, {
+			from: message.from,
+			url: message.url,
+			createdAt: formattedTime
+		})
+	}
+	
 	jQuery("#messages").append(html)
 	scrollToBottom();
 })
@@ -91,22 +110,11 @@ socket.on("giphyResults", (response) => {
 				url: result[0].url
 			})	
 		}
+		
+		MicroModal.close("modal-1");
+		giphyBtn.removeAttr("disabled").text("Send giphy");
+		messageTextBox.val("");
 	})
-})
-
-socket.on("newGiphyMessage", (response) => {
-	let formattedTime = moment(response.createdAt).format("h:mm a")
-	let template = jQuery("#giphy-message-template").html()
-	let html = Mustache.render(template, {
-		from: response.from,
-		url: response.url,
-		createdAt: formattedTime
-	})
-	MicroModal.close("modal-1");
-	jQuery("#messages").append(html)
-	giphyBtn.removeAttr("disabled").text("Send giphy");
-	messageTextBox.val("");
-	scrollToBottom();	
 })
 
 
@@ -130,17 +138,6 @@ locationBtn.on("click", function(e) {
 	})
 })
 
-socket.on("newLocationMessage", (message) => {
-	let formattedTime = moment(message.createdAt).format("h:mm a")
-	let template = jQuery("#location-message-template").html()
-	let html = Mustache.render(template, {
-		from: message.from,
-		url: message.url,
-		createdAt: formattedTime
-	})
-	jQuery("#messages").append(html)
-	scrollToBottom();
-})
 
 socket.on("updateUserList", (users) => {
 	let ol = jQuery("<ol></ol>");

@@ -8,10 +8,12 @@ const port = process.env.PORT || 3000
 const socketIO = require("socket.io");
 const server = http.createServer(app);
 const io = socketIO(server);
-const {generateMessage, generateLocationMessage, generateGiphyResults, generateGiphyMessage} = require("./utils/message");
+const {generateMessage, generateGiphyResults} = require("./utils/message");
 const {isRealString, invalidName} = require("./utils/validation");
 const {Users} = require("./utils/users");
 const users = new Users();
+const {mongoose} = require("./database");
+const {ChatMessage} = require("./models/chat_message");
 
 app.use(express.static(publicPath))
 
@@ -22,14 +24,22 @@ io.on("connection", (socket) => {
 		let user = users.removeUser(socket.id);
 		if (user) {
 			io.to(user.room).emit("updateUserList", users.getUserList(user.room));
-			io.to(user.room).emit("newMessage", generateMessage("Admin", `${user.name} has left the room`))
+			io.to(user.room).emit("newMessage", generateMessage("Admin", `${user.name} has left the room 😞`))
 		}
 	})
 
 	socket.on("createMessage", (message, callback) => {
 		let user = users.getUser(socket.id);
 		if (user && isRealString(message.text)){
-			io.to(user.room).emit("newMessage", generateMessage(user.name, message.text))
+			let newMsg = new ChatMessage({
+				text: message.text,
+				from: user.name,
+				room: user.room,
+				type: "text"
+			})
+			newMsg.save().then(savedMessage => {
+				io.to(user.room).emit("newMessage", savedMessage)
+			}).catch(e => console.log(e))
 		}
 		
 		callback()
@@ -38,7 +48,15 @@ io.on("connection", (socket) => {
 	socket.on("createLocationMessage", (coords) => {
 		let user = users.getUser(socket.id)
 		if (user){
-			io.to(user.room).emit("newLocationMessage", generateLocationMessage(user.name, coords.lat, coords.lng))
+			let newMsg = new ChatMessage({
+				from: user.name,
+				room: user.room,
+				url: `https://google.com/maps?q=${coords.lat},${coords.lng}`,
+				type: "link"
+			})
+			newMsg.save().then(savedMessage => {
+				io.to(user.room).emit("newMessage", savedMessage)
+			}).catch(e => console.log(e))
 		}
 	})
 
@@ -51,7 +69,16 @@ io.on("connection", (socket) => {
 	socket.on("selectedGif", (data) => {
 		let user = users.getUser(socket.id)
 		if (user){
-			io.to(user.room).emit("newGiphyMessage", generateGiphyMessage(user.name, data.url))
+			let newMsg = new ChatMessage({
+				from: user.name,
+				room: user.room,
+				url: data.url,
+				type: "image"
+			})
+
+			newMsg.save().then(savedMessage => {
+				io.to(user.room).emit("newMessage", savedMessage)
+			})
 		}
 	})
 
@@ -75,10 +102,19 @@ io.on("connection", (socket) => {
 		socket.join(room);
 		users.removeUser(socket.id);
 		users.addUser(socket.id, name, room);
-		io.to(room).emit("updateUserList", users.getUserList(room));
 
-		socket.emit("newMessage", generateMessage("Admin", `Welcome to ${room} chat`))
-		socket.broadcast.to(room).emit("newMessage", generateMessage("Admin", `${name} has joined the chat`)) 
+		// populate chat room with last 10 messages
+		ChatMessage.find({room: room}).sort({createdAt: -1}).limit(20).then(messages => {
+			if (messages.length) {
+				messages.reverse().forEach(message => {
+					socket.emit("newMessage", message)
+				})	
+			}
+		}).catch(e => console.log(e))
+
+		io.to(room).emit("updateUserList", users.getUserList(room));
+		socket.emit("newMessage", generateMessage("Admin", `Welcome to the chat room 🤟`))
+		socket.broadcast.to(room).emit("newMessage", generateMessage("Admin", `${name} has joined the chat 🤓`)) 
 		callback()
 	})
 
