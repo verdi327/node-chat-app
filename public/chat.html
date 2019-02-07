@@ -21,7 +21,8 @@
 	  	  <input name="message" type="text" placeholder="Message" autofocus autocomplete="off" />
 	  	  <button>Send</button>
 	  	</form>
-	  	<button id="send-location">Send location</button>		
+	  	<button id="send-location">Send location</button>
+	  	<button id="send-giphy">Send Giphy</button>	
 	  </div>
 	  
 	</div>
@@ -49,6 +50,20 @@
 			</div>
 		</li>
 	</script>
+
+	<script id="giphy-message-template" type="text/template">
+		<li class="message">
+			<div class="message__title">
+				<h4>{{from}}</h4>
+				<span>{{createdAt}}</span>
+			</div>
+			<div class="message__body">
+				<img src={{url}}>			
+			</div>
+		</li>
+	</script>
+
+	
 
 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="/libs/jquery-3.3.1.min.js"></script>

@@ -7,15 +7,15 @@ const port = process.env.PORT || 3000
 const socketIO = require("socket.io");
 const server = http.createServer(app);
 const io = socketIO(server);
-const {generateMessage, generateLocationMessage} = require("./utils/message");
-const {isRealString} = require("./utils/validation");
+const {generateMessage, generateLocationMessage, generateGiphyMessage} = require("./utils/message");
+const {isRealString, invalidName} = require("./utils/validation");
 const {Users} = require("./utils/users");
 const users = new Users();
 
 app.use(express.static(publicPath))
 
 io.on("connection", (socket) => {
-	console.log("new user connected")
+	socket.emit("availableRooms", users.availableRooms());
 
 	socket.on("disconnect", () => {
 		let user = users.removeUser(socket.id);
@@ -41,12 +41,31 @@ io.on("connection", (socket) => {
 		}
 	})
 
-	socket.on("join", (params, callback) => {
-		if (!isRealString(params.name) || !isRealString(params.room)) {
-			return callback("Display name or room name is not valid")
+	socket.on("createGiphyMessage", (data) => {
+		let user = users.getUser(socket.id)
+		if (user) {
+			generateGiphyMessage(user.name, data.text).then(response => {
+				io.to(user.room).emit("newGiphyMessage", response)
+			}).catch(e => console.log(e))
 		}
+	})
+
+	socket.on("join", (params, callback) => {
+		if (!isRealString(params.name)) {
+			return callback("Display name is required")
+		}
+
+		if (invalidName(users.list, params.name)) {
+			return callback("Display name is already taken")
+		}
+
+		if (params.availableRooms && isRealString(params.availableRooms)){
+			// if user selected a room to join, set the room to it
+			params.room = params.availableRooms
+		}
+
 		let [name, room] = [params.name, params.room]
-		
+		room = room.toLowerCase();
 		
 		socket.join(room);
 		users.removeUser(socket.id);

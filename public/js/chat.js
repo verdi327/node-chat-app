@@ -1,4 +1,4 @@
-let socket = io();
+const socket = io();
 
 const scrollToBottom = () => {
 	// selectors
@@ -22,8 +22,6 @@ socket.on("connect", () => {
 		if (err) {
 			alert(err);
 			window.location.href = "/";
-		} else {
-			console.log("no error")
 		}
 	})
 });
@@ -52,6 +50,37 @@ jQuery("#message-form").on("submit", function(e) {
 	}, function(res){
 		messageTextBox.val("")
 	})
+})
+
+let giphyBtn = jQuery("#send-giphy");
+giphyBtn.on("click", function(e) {
+	giphyBtn.attr("disabled", "disabled").text("Sending gif...");
+
+	if (!messageTextBox.val().trim().length){
+		alert("Message text is required to find a gif")
+		giphyBtn.removeAttr("disabled").text("Send giphy");
+		return
+	}
+	socket.emit("createGiphyMessage", {
+		text: messageTextBox.val()
+	}, function(e) {
+		giphyBtn.removeAttr("disabled").text("Send giphy");
+		alert("Unable to connect to Giphy servers");
+	})
+})
+
+socket.on("newGiphyMessage", (message) => {
+	let formattedTime = moment(message.createdAt).format("h:mm a")
+	let template = jQuery("#giphy-message-template").html()
+	let html = Mustache.render(template, {
+		from: message.from,
+		url: message.url,
+		createdAt: formattedTime
+	})
+	jQuery("#messages").append(html)
+	giphyBtn.removeAttr("disabled").text("Send giphy");
+	messageTextBox.val("");
+	scrollToBottom();
 })
 
 let locationBtn = jQuery("#send-location")
@@ -95,8 +124,5 @@ socket.on("updateUserList", (users) => {
 	jQuery("#users").html(ol);
 
 })
-
-
-
 
 

@@ -33,6 +33,11 @@ class Users {
 		}
 		return users.map(user => user.name)
 	}
+
+	availableRooms(){
+		let rooms = this.list.map(user => user.room)
+		return _.uniq(rooms);
+	}
 }
 
 module.exports = {

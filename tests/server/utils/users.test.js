@@ -66,4 +66,11 @@ describe("Users", () => {
 			expect(userList).toEqual([])
 		})
 	})
+
+	describe("availableRooms", () => {
+		it("should return a unique list of all rooms", () => {
+			let rooms = users.availableRooms();
+			expect(rooms).toEqual(["Room A", "Room B"])
+		})
+	})
 })
