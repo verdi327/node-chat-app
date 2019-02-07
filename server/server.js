@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000
 const socketIO = require("socket.io");
 const server = http.createServer(app);
 const io = socketIO(server);
-const {generateMessage, generateLocationMessage, generateGiphyMessage} = require("./utils/message");
+const {generateMessage, generateLocationMessage, generateGiphyResults, generateGiphyMessage} = require("./utils/message");
 const {isRealString, invalidName} = require("./utils/validation");
 const {Users} = require("./utils/users");
 const users = new Users();
@@ -42,12 +42,16 @@ io.on("connection", (socket) => {
 		}
 	})
 
-	socket.on("createGiphyMessage", (data) => {
+	socket.on("searchGiphy", (data) => {
+		generateGiphyResults(data.text).then(response => {
+			socket.emit("giphyResults", response)
+		}).catch(e => console.log(e))
+	})
+
+	socket.on("selectedGif", (data) => {
 		let user = users.getUser(socket.id)
-		if (user) {
-			generateGiphyMessage(user.name, data.text).then(response => {
-				io.to(user.room).emit("newGiphyMessage", response)
-			}).catch(e => console.log(e))
+		if (user){
+			io.to(user.room).emit("newGiphyMessage", generateGiphyMessage(user.name, data.url))
 		}
 	})
 

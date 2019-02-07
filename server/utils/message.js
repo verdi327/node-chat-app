@@ -17,7 +17,7 @@ const generateLocationMessage = (from, lat, lng) => {
 	}
 }
 
-const generateGiphyMessage = (from, text) => {
+const generateGiphyResults = (text) => {
 	let giphyUrl = `https://api.giphy.com/v1/gifs/search?api_key=${process.env.GIPHY_API_KEY}&q=${text}&limit=12&offset=0&rating=PG-13&lang=en`
 	let data = []
 
@@ -28,16 +28,21 @@ const generateGiphyMessage = (from, text) => {
 			gif.previewUrl = result.images.fixed_width_small.url
 			data.push(gif)
 		})
-		return {
-			from,
-			data,
-			createdAt: moment().valueOf()
-		}
+		return {data}
 	})
+}
+
+const generateGiphyMessage = (from, url) => {
+	return {
+		from,
+		url,
+		createdAt: moment().valueOf()
+	}
 }
 
 module.exports = {
 	generateMessage,
 	generateLocationMessage,
+	generateGiphyResults,
 	generateGiphyMessage
 }

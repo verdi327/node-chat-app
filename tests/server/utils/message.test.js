@@ -3,6 +3,7 @@ const expect = require("expect");
 const {
 	generateMessage, 
 	generateLocationMessage,
+	generateGiphyResults,
 	generateGiphyMessage
 } = require("./../../../server/utils/message")
 
@@ -24,15 +25,23 @@ describe("generateLocationMessage", () => {
 	})
 })
 
-describe("generateGiphyMessage", () => {
+describe("generateGiphyResults", () => {
 	it("should return an object with 12 results from Giphy Api", (done) => {
-		generateGiphyMessage("dave", "tired cat").then(response => {
-			expect(response.createdAt).toExist()
-			expect(response.from).toBe("dave")
+		generateGiphyResults("tired cat").then(response => {
 			expect(response.data.length).toBe(12)
 			expect(response.data[0].url).toExist()
 			expect(response.data[0].previewUrl).toExist()
 			done()
 		}).catch(e => done(e))
+	})
+})
+
+describe("generateGiphyMessage", () => {
+	it("generates a correct response object", () => {
+		let [from, url] = ["Dave", "https://giphyapi.com/cats"]
+		let newMessage = generateGiphyMessage(from, url)
+		expect(newMessage.createdAt).toExist()
+		expect(newMessage.url).toBe(url)
+		expect(newMessage.from).toBe(from)
 	})
 })
