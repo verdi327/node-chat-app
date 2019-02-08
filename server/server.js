@@ -104,7 +104,7 @@ io.on("connection", (socket) => {
 		users.addUser(socket.id, name, room);
 
 		// populate chat room with last 10 messages
-		ChatMessage.find({room: room}).sort({createdAt: -1}).limit(20).then(messages => {
+		ChatMessage.find({room: room}).sort({createdAt: -1}).limit(30).then(messages => {
 			if (messages.length) {
 				messages.reverse().forEach(message => {
 					socket.emit("newMessage", message)
