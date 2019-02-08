@@ -71,6 +71,13 @@ jQuery("#message-form").on("submit", function(e) {
 	})
 })
 
+jQuery("button#modal-close").on("click", function(e){
+	MicroModal.close("modal-1");
+	giphyBtn.removeAttr("disabled").text("Send giphy");
+	messageTextBox.val("");
+})
+
+
 let giphyBtn = jQuery("#send-giphy");
 giphyBtn.on("click", function(e) {
 	giphyBtn.attr("disabled", "disabled").text("Sending gif...");
@@ -110,7 +117,7 @@ socket.on("giphyResults", (response) => {
 				url: result[0].url
 			})	
 		}
-		
+
 		MicroModal.close("modal-1");
 		giphyBtn.removeAttr("disabled").text("Send giphy");
 		messageTextBox.val("");
